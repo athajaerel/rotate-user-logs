@@ -1,4 +1,5 @@
 ---
+# Could also use a lookup: "{{ lookup('env', 'USER') }}"
 - name: 'Get username'
   register: 'whoami'
   connection: 'local'
