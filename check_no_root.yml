@@ -1,0 +1,15 @@
+---
+- name: 'Get username'
+  register: 'whoami'
+  connection: 'local'
+  run_once: yes
+  become: no
+  command:
+    argv:
+      - 'whoami'
+
+- name: 'Fail if whoami returned root'
+  when: "'root' in whoami.stdout"
+  fail:
+    msg: "Don't run this script as root."
+...

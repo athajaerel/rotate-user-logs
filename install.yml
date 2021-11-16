@@ -1,0 +1,58 @@
+---
+- hosts: 'localhost'
+  connection: 'local'
+  run_once: yes
+  become: no
+  gather_facts: no
+  tasks:
+    - import_tasks: 'check_no_root.yml'
+
+- hosts: 'localhost'
+  connection: 'local'
+  run_once: yes
+  become: no
+  gather_facts: no
+  vars:
+    package: 'logrotate'
+  tasks:
+    - name: 'Query packages'
+      package_facts:
+        manager: 'apt'
+    - name: 'Fail if {{ package }} is not installed'
+      when: ansible_facts.packages[package] is not defined
+      fail:
+        msg: 'The {{ package }} package is not installed.'
+
+- hosts: 'localhost'
+  connection: 'local'
+  run_once: yes
+  gather_facts: no
+  tasks:
+    - name: 'Create directories'
+      loop: '{{ config }}'
+      file:
+        path: '$HOME/{{ item.archive_dir }}'
+        state: 'directory'
+
+- hosts: 'localhost'
+  connection: 'local'
+  run_once: yes
+  gather_facts: no
+  tasks:
+    - name: 'Deploy default configuration'
+      template:
+        src: 'config.j2'
+        dest: '~/.config/rotate-user-logs.conf'
+
+- hosts: 'localhost'
+  connection: 'local'
+  run_once: yes
+  gather_facts: no
+  tasks:
+    - name: 'Set up user cronjob'
+      cron:
+        hour: '12'
+        minute: '30'
+        name: 'Rotate user logs'
+        job: '/usr/sbin/logrotate -f $HOME/.config/rotate-user-logs.conf -s $HOME/.logrotate.state'
+...

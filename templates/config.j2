@@ -1,0 +1,10 @@
+{% for C in config -%}
+{{ home }}/{{ C.path }} {
+	rotate 1000
+	olddir {{ home }}/{{ C.archive_dir }}
+	compress
+	dateext
+	missingok
+}
+
+{% endfor -%}
